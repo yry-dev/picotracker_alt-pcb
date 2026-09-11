@@ -118,12 +118,17 @@ concerns; on the LiPo 2 battery sense is internal GP43.)
 | --- | --- |
 | I2S data-in (BCLK/LRCLK shared with the DAC clocks) | GP16 |
 | I2C SDA/SCL (codec ctrl + MAX17048) | GP14/15 |
-| Headphone jack detect | GP28 |
+| Codec MCLK (PIO-generated 256·fs) | GP28 |
 
-Speaker-amp auto-mute costs zero GPIO: wire the HP jack's switch contact
-directly to the MAX98306 `SD` pin in hardware (jack detect to the MCU is
-for UI only). Result: **26/26 used, zero spare** — any future feature
-reopens this fight (that's the accepted price of the non-XL module).
+**MCLK instead of jack detect** (decided during schematic capture): nearly
+every affordable codec module (ES8388 etc.) requires an MCLK the PIO I2S
+engine doesn't currently produce, so GP28 goes to MCLK — a codec that PLLs
+from BCLK (TLV320AIC3204) can simply leave the pin NC. Headphone jack
+detect and speaker auto-mute were dropped with it: the PJ311 jack footprint
+this board standardizes on has no switch contact anyway, and the existing
+manual kill switch (J9) already covers speaker muting. Result: **26/26
+used, zero spare** — any future feature reopens this fight (the accepted
+price of the non-XL module).
 
 Matrix notes: diodes are mandatory — tracker key combos mean 3+ simultaneous
 presses, and a diode per switch (9× 1N4148, same part as D1) makes the
@@ -165,7 +170,9 @@ respect RP2350 I2C/PIO pin-function tables during schematic capture.
    pool at it, replace/augment `LOAD_IN_FLASH`. This is the change that makes
    "more than a toy amount of sample memory" real. (Medium.)
 3. **Codec driver**: I2C register setup + PIO I2S full-duplex (new PIO
-   program for RX; TX program exists in `audio_i2s.pio`). Implement the real
+   program for RX; TX program exists in `audio_i2s.pio`), plus a PIO/clock
+   divider generating 256·fs MCLK on GP28 for codecs that need it (pick a
+   sys-clock that divides to exact audio rates). Implement the real
    `record.h` API (`SetInputSource`, mic gain, levels) — the app-side
    `RecordStreamer` UI already exists upstream. (Medium–hard; the core new
    engineering.)
@@ -188,6 +195,27 @@ respect RP2350 I2C/PIO pin-function tables during schematic capture.
 - Bring-up checklist: power/charge → display → SD → keys → MIDI loopback →
   DAC playback → HP out → recording from line-in → mic → battery gauge.
 - Burn-in: 8-channel project playback for CPU headroom; 6 h battery test.
+
+## 5½. Implementation status: `kicad_advance/`
+
+`kicad_advance/` is a copy of `kicad/` carrying the schematic + PCB updates:
+
+- **Schematic — done** (ERC: 0 errors): key matrix (COL0-2 on GP11-13, ROW0-2
+  on GP8-10, D2–D10), codec headers J11 `CODEC_DIG` (3V3/GND/MCLK/BCK/LRCK/
+  DIN/DOUT/SDA/SCL) + J12 `CODEC_ANA` (LINE_L/R, MIC_IN, L_AMP/R_AMP, AGND),
+  J13 line-in + J14 phones jacks, J15 mic module, J16 fuel-gauge header on
+  I2C, MCLK on GP28, PCM5102 (old U3) removed. Amp input now taps the codec
+  HP outs (nets `L_AMP`/`R_AMP` unchanged at J10).
+- **PCB — nets & parts done, placement/routing not**: all pads re-netted,
+  old key/I2S-to-U3 tracks removed, zones refilled; the 15 new footprints
+  are **staged off-board right of the outline (x≈195–230 mm)** awaiting
+  manual placement + routing. DRC delta vs the original board is only the
+  expected unrouted ratsnest + one pre-existing MIDI-area short family.
+- **Conventions kept**: J13/J14 PJ311 pads are left unnetted like the
+  existing MIDI jacks (symbol S/R/T vs pads 1–6) — hand-wire as before.
+
+Remaining PCB work: place diodes near their switches (B.Cu), place codec/
+jacks/mic/gauge, route COL/ROW, I2C, I2S-in, MCLK, and audio analog nets.
 
 ## 6. Explicitly out of scope (and why)
 
