@@ -1,0 +1,23 @@
+# KiCad generated output / backup folders
+*-backups/
+fp-info-cache
+*.kicad_prl
+*-bak
+*.bak
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*.lck
+*.rpt
+
+# Autosave / lock files
+~*.lck
+*~
+
+# Python bytecode cache
+__pycache__/
+*.py[co]
+
+# Claude Code local config
+.claude/
+.omc/
+.playwright-mcp/
