@@ -206,16 +206,30 @@ respect RP2350 I2C/PIO pin-function tables during schematic capture.
   J13 line-in + J14 phones jacks, J15 mic module, J16 fuel-gauge header on
   I2C, MCLK on GP28, PCM5102 (old U3) removed. Amp input now taps the codec
   HP outs (nets `L_AMP`/`R_AMP` unchanged at J10).
-- **PCB — nets & parts done, placement/routing not**: all pads re-netted,
-  old key/I2S-to-U3 tracks removed, zones refilled; the 15 new footprints
-  are **staged off-board right of the outline (x≈195–230 mm)** awaiting
-  manual placement + routing. DRC delta vs the original board is only the
-  expected unrouted ratsnest + one pre-existing MIDI-area short family.
+- **PCB — placed and routed**: all 9 diodes sit on **B.Cu (back)** among the
+  switch rows (cathode toward its ROW), codec headers J11/J12, jacks J13/J14,
+  mic J15 and fuel-gauge J16 are placed on-board along the right, and all 47
+  new-net connections (COL/ROW matrix, I2S BCK/LRCK/DIN/data-in, MCLK, I2C
+  SDA/SCL, MIC_IN, L_AMP/R_AMP/AGND, and header VCC/GND) are auto-routed on
+  a 0.2 mm grid (0.25 mm tracks, 0.25 mm clearance), with GND-island stitch
+  vias and zones refilled. Total DRC count *dropped* 528 → 343 (the refill
+  cleaned up stale-fill shorts in the original pour).
+- **Verified clean on the new nets**: the only DRC item touching a new net is
+  an I2S_SDIN↔VCC pad-proximity flag at U1.21/R4.2 that is **already present
+  in the pre-routing board** (stranded R4.2 VCC pad in the dense MIDI/power
+  cluster) — not introduced by this routing. Everything else new is
+  cosmetic (silkscreen ref-designator clipping on the back-side parts).
+- **Known pre-existing (not from this work)**: the original hand-routed
+  MIDI/opto/power cluster around U1's south edge carries ~70 strict-DRC
+  "shorts" (sub-0.2 mm hand spacing) and a stranded R4.2 VCC pad; these
+  predate the conversion and were left untouched.
 - **Conventions kept**: J13/J14 PJ311 pads are left unnetted like the
   existing MIDI jacks (symbol S/R/T vs pads 1–6) — hand-wire as before.
 
-Remaining PCB work: place diodes near their switches (B.Cu), place codec/
-jacks/mic/gauge, route COL/ROW, I2C, I2S-in, MCLK, and audio analog nets.
+Remaining PCB polish (optional, human pass in KiCad): tidy the auto-router's
+B.Cu detours, add GND thermal spokes on a few U1 pads flagged as 1-spoke,
+and resolve the pre-existing MIDI-cluster strict-DRC shorts if a clean DRC
+is wanted before fab.
 
 ## 6. Explicitly out of scope (and why)
 
