@@ -12653,7 +12653,7 @@
 	(footprint "PinHeader_1x06_P2.54mm_Vertical"
 		(layer "B.Cu")
 		(uuid "ae76ae27-9399-49cf-9466-9cc5e14b48ed")
-		(at 110.5 91.65 180)
+		(at 84.24 91.84 180)
 		(descr "Through hole straight pin header, 1x06, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x06 2.54mm single row")
 		(property "Reference" "J12"
