@@ -21,3 +21,17 @@ __pycache__/
 .claude/
 .omc/
 .playwright-mcp/
+
+# Manual backup copies (e.g. pico_tracker.kicad_pcb.bak_9pin)
+*.bak_*
+
+# KiCad restore-point folders
+_restore_backup_*/
+
+# Fabrication Toolkit output and settings
+production/
+fabrication-toolkit-options.json
+*-pos.csv
+
+# VS Code Local History extension
+.history/
